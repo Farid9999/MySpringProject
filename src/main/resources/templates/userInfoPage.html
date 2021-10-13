@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Info</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .star-rating__wrap{
+            display: inline-block;
+            font-size: 1rem;
+        }
+        .star-rating__wrap:after{
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .star-rating__ico{
+            float: right;
+            padding-left: 2px;
+            cursor: pointer;
+            color: #FFB300;
+        }
+        .star-rating__ico:last-child{
+            padding-left: 0;
+        }
+        .star-rating__input{
+            display: none;
+        }
+        .star-rating__ico:hover:before,
+        .star-rating__ico:hover ~ .star-rating__ico:before,
+        .star-rating__input:checked ~ .star-rating__ico:before
+        {
+            content: "\f005";
+        }
+
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body class="bg-warning">
+<!-- Include _menu.html -->
+<th:block th:include="/_menu"></th:block>
+<div class="container">
+
+    <h2>Message : <span th:utext="${message}"></span></h2>
+    <h2>User Info Page</h2>
+    <h3>Welcome : <span th:utext="${#request.userPrincipal.name}"></span></h3>
+    <b>This is protected page!</b>
+
+    <th:block th:if="questions!=null">
+        <ol th:each="question: ${questions}">
+            <li >
+            <span>
+                <label text="Вопрос : "> </label>
+                <label th:utext="${question.getAppQuestion().question}"> </label>
+
+                <label text="  Ответил : "> </label>
+                <label th:utext="${question.getWorkerId().userName}"></label>
+
+                <div th:if="${question.getMark() != null}">
+                     <label text="  Mark : "> </label>
+                     <label th:utext="${question.getMark()}"></label>
+                </div>
+            </span>
+                <form name="myForm" th:if="${question.getMark() == null}" >
+                    .....
+                    <div class="form-group">
+                        <label>Ваша оценка</label>
+                        <div class="star-rating">
+                            <div class="star-rating__wrap bg-success">
+                                <input class="star-rating__input" id="star-5" type="radio" th:name="rating" th:value="5">
+                                <label class="star-rating__ico fa fa-star-o fa-lg" for="star-5" title="Отлично"></label>
+                                <input class="star-rating__input" id="star-4" type="radio" th:name="rating" value="4">
+                                <label class="star-rating__ico fa fa-star-o fa-lg" for="star-4" title="Хорошо"></label>
+                                <input class="star-rating__input" id="star-3" type="radio" th:name="rating" value="3">
+                                <label class="star-rating__ico fa fa-star-o fa-lg" for="star-3" title="Удовлетворительно"></label>
+                                <input class="star-rating__input" id="star-2" type="radio" th:name="rating" value="2">
+                                <label class="star-rating__ico fa fa-star-o fa-lg" for="star-2" title="Плохо"></label>
+                                <input class="star-rating__input" id="star-1" type="radio" th:name="rating" value="1">
+                                <label class="star-rating__ico fa fa-star-o fa-lg" for="star-1" title="Ужасно"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <input name="question" class="btn btn-primary" hidden th:value="${question.id}">
+                    <input name="click" type="submit" class="btn btn-primary" >Save</input>
+                    <!--  th:onclick="GiveRating(${question.id})"-->
+                    .....
+                </form>
+            </li>
+
+        </ol>
+    </th:block>
+    <br/><br/>
+    <button th:if="isUser!=null" onclick="window.location.href='/IwantBecomeAdmin'" class="btn btn-primary">Become an admin</button>
+    <div th:if="${userInfo != null}" th:utext="${userInfo}"></div>
+
+    <div>
+        <form action="/askQuestion" method="post">
+            <input type="text" name="question" value="Help me">
+            <input class="btn btn-primary" type="submit">
+        </form>
+    </div>
+
+</div>
+
+<script>
+
+    document.forms.myForm.addEventListener('submit',function (){
+        event.preventDefault();
+
+        console.log(event.target.rating.value);
+        console.log(event.target.question.value);
+
+         GiveRating(event.target.question.value,event.target.rating.value);
+    });
+
+
+
+   function GiveRating(questionId,mark) {
+        $.ajax({
+            url: "/saveMark",
+            method: "post",
+            cache: false,
+            dataType: "html",
+            data: {
+                questionId:questionId,
+                mark:mark
+            },
+            success: function(data){
+                alert("Ocenka vistavlena!)")
+               // console.log(data)
+            }
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+
+</html>
